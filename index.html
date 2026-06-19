@@ -328,3 +328,333 @@
     <script src="script.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Saúde - Hospitais Públicos do Brasil</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Tela de Splash -->
+    <div id="splash-screen" class="screen active">
+        <div class="splash-container">
+            <div class="splash-logo">
+                <div class="logo-icon">🏥</div>
+                <h1 class="splash-title">Radar Saúde</h1>
+                <p class="splash-subtitle">Hospitais Públicos do Brasil</p>
+            </div>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Tela de Login -->
+    <div id="login-screen" class="screen">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-container">
+                    <div class="logo-icon-large">🏥</div>
+                    <h1>Bem-vindo ao Radar Saúde</h1>
+                    <p>Seu guia para atendimento mais rápido</p>
+                </div>
+            </div>
+
+            <div class="login-form-container">
+                <h2>Cadastro</h2>
+                <p class="form-subtitle">Preencha seus dados para acessar o sistema</p>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="name">Nome Completo</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="name" placeholder="Digite seu nome completo" required>
+                        </div>
+                        <span class="error-message" id="name-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rg">RG</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🪪</span>
+                            <input type="text" id="rg" placeholder="00.000.000-0" maxlength="12" required>
+                        </div>
+                        <span class="error-message" id="rg-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpf">CPF</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">💳</span>
+                            <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" required>
+                        </div>
+                        <span class="error-message" id="cpf-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Número de Telefone</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📱</span>
+                            <input type="text" id="phone" placeholder="(00) 00000-0000" maxlength="15" required>
+                        </div>
+                        <span class="error-message" id="phone-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cep">CEP (Opcional)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📍</span>
+                            <input type="text" id="cep" placeholder="00000-000" maxlength="9">
+                        </div>
+                        <span class="error-message" id="cep-error"></span>
+                        <p class="field-hint">🚑 Para localização rápida em emergências</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="password" placeholder="Mínimo 6 caracteres" required>
+                            <button type="button" class="toggle-password" data-target="password">👁️</button>
+                        </div>
+                        <span class="error-message" id="password-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">Confirmar Senha</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="confirm-password" placeholder="Digite novamente a senha" required>
+                            <button type="button" class="toggle-password" data-target="confirm-password">👁️</button>
+                        </div>
+                        <span class="error-message" id="confirm-password-error"></span>
+                    </div>
+
+                    <div class="disability-section">
+                        <div class="disability-header">
+                            <div>
+                                <label>Pessoa com deficiência</label>
+                                <p class="disability-subtitle">Ativa atendimento prioritário</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="has-disability">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div id="disability-proof-section" class="disability-proof" style="display: none;">
+                            <label>Comprovante de Deficiência *</label>
+                            <input type="file" id="disability-proof" accept="image/*,.pdf" style="display: none;">
+                            <button type="button" class="upload-btn" id="upload-proof-btn">
+                                <span>📤</span> Enviar documento (Foto ou PDF)
+                            </button>
+                            <div id="proof-filename" class="proof-filename"></div>
+                            <p class="field-hint">📄 Carteira de identificação, laudo médico ou documento oficial</p>
+                        </div>
+                    </div>
+
+                    <div class="privacy-notice">
+                        🔒 Seus dados são utilizados apenas para identificação no atendimento e não são compartilhados com terceiros.
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-large">
+                        <span>🩺</span> Acessar Radar Saúde
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela Principal -->
+    <div id="main-screen" class="screen">
+        <header class="main-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button id="menu-toggle" class="icon-btn">☰</button>
+                    <div class="logo-header">
+                        <div class="logo-icon-small">🏥</div>
+                        <div>
+                            <h1>Radar Saúde</h1>
+                            <p>Hospitais Públicos do Brasil</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button id="profile-btn" class="btn-outline">
+                        <span>👤</span> Perfil
+                    </button>
+                    <button id="logout-btn" class="btn-outline">
+                        <span>🚪</span> Sair
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside id="sidebar" class="sidebar open">
+                <div class="sidebar-content">
+                    <div class="sidebar-section">
+                        <h3>Visualização</h3>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="map">
+                                <span>🗺️</span> Mapa
+                            </button>
+                            <button class="view-btn" data-view="list">
+                                <span>📋</span> Lista
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Modo de Transporte</h3>
+                        <div class="transport-modes">
+                            <button class="transport-btn" data-mode="walk">🚶</button>
+                            <button class="transport-btn" data-mode="bike">🚴</button>
+                            <button class="transport-btn active" data-mode="car">🚗</button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Localização</h3>
+                        <div class="location-display">
+                            <span>📍</span>
+                            <div>
+                                <p class="location-label">Sua localização atual</p>
+                                <p class="location-coords" id="user-location">Carregando...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>Status</h3>
+                        <div class="status-badges">
+                            <span class="badge badge-success">
+                                <span class="badge-dot"></span> Online
+                            </span>
+                            <span class="badge badge-info" id="hospital-count">0 Hospitais</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="content-area">
+                <div id="map-view" class="view-container active">
+                    <div id="map"></div>
+                </div>
+                <div id="list-view" class="view-container">
+                    <div class="list-header">
+                        <div class="list-info">
+                            <span>📍</span>
+                            <div>
+                                <p><strong id="hospital-list-count">0 hospitais públicos encontrados</strong></p>
+                                <p class="text-muted">Ordenados por proximidade</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="hospital-list" class="hospital-list"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>👤 Meu Perfil</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-photo-section">
+                    <div class="profile-photo" id="profile-photo-display">
+                        <span class="profile-photo-placeholder">👤</span>
+                        <img id="profile-photo-img" style="display: none;">
+                    </div>
+                    <input type="file" id="profile-photo-input" accept="image/*" style="display: none;">
+                    <button class="photo-upload-btn" id="upload-photo-btn">📷</button>
+                    <p class="photo-hint">📸 Envie apenas uma foto nítida do seu rosto</p>
+                </div>
+
+                <div class="profile-section">
+                    <h3>Informações Pessoais</h3>
+                    <div class="profile-fields">
+                        <div class="profile-field">
+                            <label>Nome Completo</label>
+                            <input type="text" id="profile-name" readonly>
+                            <p class="field-note">Nome não pode ser alterado</p>
+                        </div>
+                        <div class="profile-field">
+                            <label>CPF</label>
+                            <input type="text" id="profile-cpf" readonly>
+                        </div>
+                        <div class="profile-field">
+                            <label>RG</label>
+                            <input type="text" id="profile-rg" readonly>
+                        </div>
+                        <div class="profile-field">
+                            <label>Telefone</label>
+                            <input type="text" id="profile-phone" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section profile-section-cep">
+                    <div class="section-header">
+                        <h3>CEP para Emergências</h3>
+                        <button class="btn-link" id="edit-cep-btn">Editar</button>
+                    </div>
+                    <div class="profile-field">
+                        <label>CEP</label>
+                        <input type="text" id="profile-cep" maxlength="9" readonly>
+                        <span class="error-message" id="profile-cep-error"></span>
+                        <p class="field-hint">🚑 Usado para localizar você rapidamente em caso de emergência</p>
+                    </div>
+                </div>
+
+                <div class="profile-section profile-section-password">
+                    <div class="section-header">
+                        <h3>Segurança</h3>
+                        <button class="btn-link" id="edit-password-btn">Alterar Senha</button>
+                    </div>
+                    <div id="password-edit-fields" style="display: none;">
+                        <div class="profile-field">
+                            <label>Senha Atual</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="current-password">
+                                <button type="button" class="toggle-password" data-target="current-password">👁️</button>
+                            </div>
+                            <span class="error-message" id="current-password-error"></span>
+                        </div>
+                        <div class="profile-field">
+                            <label>Nova Senha</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="new-password" placeholder="Mínimo 6 caracteres">
+                                <button type="button" class="toggle-password" data-target="new-password">👁️</button>
+                            </div>
+                            <span class="error-message" id="new-password-error"></span>
+                        </div>
+                        <div class="profile-field">
+                            <label>Confirmar Nova Senha</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="confirm-new-password">
+                                <button type="button" class="toggle-password" data-target="confirm-new-password">👁️</button>
+                            </div>
+                            <span class="error-message" id="confirm-new-password-error"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" id="close-profile-btn">Fechar</button>
+                <button class="btn-primary" id="save-profile-btn">💾 Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
