@@ -838,6 +838,65 @@ input:checked + .slider:before {
     }
 }
 
+
+/* ===== ADMIN PANEL CSS ===== */
+.admin-tab {
+    padding: 12px 16px; border: none; background: none;
+    color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+.admin-tab.active { color: white; border-bottom-color: #667eea; background: rgba(255,255,255,0.05); }
+.admin-panel { display: none; }
+.admin-panel.active { display: block; }
+.admin-stat-card {
+    background: white; border-radius: 12px; padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.admin-stat-num { font-size: 26px; font-weight: 800; color: #2d3748; }
+.admin-stat-label { font-size: 12px; color: #718096; margin-top: 2px; }
+.fila-item {
+    background: white; border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.fila-item-name { font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 8px; }
+.fila-item-row { display: flex; align-items: center; gap: 10px; }
+.fila-slider {
+    flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px;
+    background: #e2e8f0; outline: none;
+}
+.fila-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    border-radius: 50%; background: #667eea; cursor: pointer;
+}
+.fila-val {
+    min-width: 60px; text-align: center; font-size: 13px; font-weight: 700;
+    padding: 4px 8px; border-radius: 8px;
+}
+.admin-user-card {
+    background: white; border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex; align-items: center; gap: 12px;
+}
+.admin-user-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 16px; flex-shrink: 0;
+}
+.admin-user-info { flex: 1; }
+.admin-user-name { font-size: 14px; font-weight: 700; color: #2d3748; }
+.admin-user-detail { font-size: 12px; color: #718096; }
+.admin-hosp-row {
+    background: white; border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.admin-del-btn {
+    background: #fff5f5; color: #c53030; border: 1.5px solid #fed7d7;
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+}
+
 </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
@@ -960,6 +1019,12 @@ input:checked + .slider:before {
 
                     <div class="privacy-notice">
                         🔒 Seus dados são utilizados apenas para identificação no atendimento e não são compartilhados com terceiros.
+                    </div>
+
+
+                    <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;">
+                        <p style="font-size:13px;color:#718096;margin-bottom:8px;">Funcionario de hospital?</p>
+                        <button type="button" onclick="showAdminLogin()" style="background:transparent;border:2px solid #667eea;color:#667eea;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;width:100%;">Acesso Administrativo</button>
                     </div>
 
                     <button type="submit" class="btn-primary btn-large">
@@ -1155,6 +1220,114 @@ input:checked + .slider:before {
             </div>
         </div>
     </div>
+
+    
+    <!-- ===== TELA ADMIN ===== -->
+    <div id="admin-screen" class="screen">
+        <header style="background:linear-gradient(135deg,#2d3748,#1a202c);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:24px;">🏥</span>
+                <div>
+                    <div style="color:white;font-size:16px;font-weight:800;">Painel Administrativo</div>
+                    <div style="color:rgba(255,255,255,0.6);font-size:11px;" id="admin-hospital-label">Radar Saude</div>
+                </div>
+            </div>
+            <button onclick="adminLogout()" style="background:rgba(255,255,255,0.1);border:none;color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">Sair</button>
+        </header>
+        <div style="background:#2d3748;display:flex;gap:0;border-bottom:1px solid #4a5568;flex-shrink:0;overflow-x:auto;">
+            <button class="admin-tab active" onclick="switchAdminTab('dashboard',this)">Dashboard</button>
+            <button class="admin-tab" onclick="switchAdminTab('fila',this)">Filas</button>
+            <button class="admin-tab" onclick="switchAdminTab('usuarios',this)">Usuarios</button>
+            <button class="admin-tab" onclick="switchAdminTab('hospitais',this)">Hospitais</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:16px;background:#f7fafc;">
+            <!-- DASHBOARD -->
+            <div id="admin-tab-dashboard" class="admin-panel active">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;color:#2d3748;">Visao Geral</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+                    <div class="admin-stat-card" style="border-left:4px solid #667eea;">
+                        <div class="admin-stat-num" id="stat-hospitais">0</div>
+                        <div class="admin-stat-label">Hospitais</div>
+                    </div>
+                    <div class="admin-stat-card" style="border-left:4px solid #48bb78;">
+                        <div class="admin-stat-num" id="stat-usuarios">0</div>
+                        <div class="admin-stat-label">Usuarios</div>
+                    </div>
+                    <div class="admin-stat-card" style="border-left:4px solid #ed8936;">
+                        <div class="admin-stat-num" id="stat-fila-media">0 min</div>
+                        <div class="admin-stat-label">Fila media</div>
+                    </div>
+                    <div class="admin-stat-card" style="border-left:4px solid #f56565;">
+                        <div class="admin-stat-num" id="stat-pcd">0</div>
+                        <div class="admin-stat-label">Pacientes PcD</div>
+                    </div>
+                </div>
+                <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:12px;">
+                    <h4 style="font-size:14px;font-weight:700;margin-bottom:12px;">Hospitais com maior fila</h4>
+                    <div id="admin-fila-ranking"></div>
+                </div>
+                <div style="background:#fff5f5;border:1.5px solid #fed7d7;border-radius:12px;padding:14px;">
+                    <div style="font-size:13px;font-weight:700;color:#c53030;margin-bottom:6px;">Alertas</div>
+                    <div id="admin-alertas" style="font-size:13px;color:#9b2c2c;line-height:1.8;"></div>
+                </div>
+            </div>
+            <!-- FILAS -->
+            <div id="admin-tab-fila" class="admin-panel">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;color:#2d3748;">Gerenciar Fila</h3>
+                <p style="font-size:13px;color:#718096;margin-bottom:14px;">Atualize o tempo de espera em tempo real.</p>
+                <div id="admin-fila-list"></div>
+            </div>
+            <!-- USUARIOS -->
+            <div id="admin-tab-usuarios" class="admin-panel">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;color:#2d3748;">Usuarios Cadastrados</h3>
+                <div id="admin-user-list"></div>
+            </div>
+            <!-- HOSPITAIS -->
+            <div id="admin-tab-hospitais" class="admin-panel">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;color:#2d3748;">Adicionar Hospital</h3>
+                <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:16px;">
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Nome</label>
+                        <input type="text" id="new-hosp-name" placeholder="Ex: UPA Norte" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Cidade</label>
+                        <input type="text" id="new-hosp-city" placeholder="Ex: Londrina" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;">
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Endereco</label>
+                        <input type="text" id="new-hosp-addr" placeholder="Rua, numero - Bairro" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Latitude</label>
+                            <input type="number" id="new-hosp-lat" placeholder="-23.5505" step="0.0001" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Longitude</label>
+                            <input type="number" id="new-hosp-lng" placeholder="-51.1696" step="0.0001" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Tipo</label>
+                            <select id="new-hosp-type" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:white;">
+                                <option>UPA</option><option>Hospital</option><option>UBS</option><option>Pronto-Socorro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Fila (min)</label>
+                            <input type="number" id="new-hosp-wait" placeholder="30" min="0" max="300" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;">
+                        </div>
+                    </div>
+                    <button onclick="adminAddHospital()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">+ Adicionar Hospital</button>
+                </div>
+                <h3 style="font-size:15px;font-weight:700;margin-bottom:10px;color:#2d3748;">Cadastrados (<span id="admin-hosp-count">0</span>)</h3>
+                <div id="admin-hosp-list"></div>
+            </div>
+        </div>
+    </div>
+
 
     <div id="toast-container" class="toast-container"></div>
 
@@ -1705,6 +1878,213 @@ function openProfileModal() {
     modal.classList.add('active');
 }
 
+
+
+// ==================== PAINEL ADMIN ====================
+let adminData = null;
+
+function showAdminLogin() {
+    document.getElementById('admin-login-modal').style.display = 'flex';
+}
+function hideAdminLogin() {
+    document.getElementById('admin-login-modal').style.display = 'none';
+}
+
+function doAdminLogin() {
+    const code = document.getElementById('admin-code-input').value.trim();
+    const pass = document.getElementById('admin-pass-input').value;
+    if (code === 'HOSP2024' && pass === 'admin123') {
+        adminData = { code, hospital: 'Hospital Regional do Parana' };
+        hideAdminLogin();
+        showScreen('admin-screen');
+        document.getElementById('admin-hospital-label').textContent = adminData.hospital;
+        loadAdminDashboard();
+        showToast('Acesso administrativo concedido!', 'success');
+    } else {
+        showToast('Codigo ou senha incorretos', 'error');
+    }
+}
+
+function adminLogout() {
+    adminData = null;
+    showScreen('login-screen');
+    showToast('Sessao administrativa encerrada', 'info');
+}
+
+function switchAdminTab(tab, btn) {
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.admin-panel').forEach(p => p.style.display = 'none');
+    const panel = document.getElementById('admin-tab-' + tab);
+    if (panel) panel.style.display = 'block';
+    if (tab === 'fila') renderAdminFila();
+    if (tab === 'usuarios') renderAdminUsuarios();
+    if (tab === 'hospitais') renderAdminHospitais();
+}
+
+function getAllUsers() {
+    const users = [];
+    for (let k in localStorage) {
+        if (k.startsWith('radarSaudeUser')) {
+            try { users.push(JSON.parse(localStorage[k])); } catch(e) {}
+        }
+    }
+    // also grab current user if exists
+    const cur = localStorage.getItem('radarSaudeUser');
+    if (cur) {
+        try {
+            const u = JSON.parse(cur);
+            if (!users.find(x => x.cpf === u.cpf)) users.push(u);
+        } catch(e) {}
+    }
+    return users;
+}
+
+function loadAdminDashboard() {
+    const users = getAllUsers();
+    const pcd = users.filter(u => u.hasDisability).length;
+    const total = mockHospitals.length;
+    const avgFila = Math.round(mockHospitals.reduce((s,h) => s + h.queue, 0) / (mockHospitals.length || 1));
+
+    document.getElementById('stat-hospitais').textContent = total;
+    document.getElementById('stat-usuarios').textContent = users.length;
+    document.getElementById('stat-fila-media').textContent = avgFila + ' min';
+    document.getElementById('stat-pcd').textContent = pcd;
+
+    // Ranking fila
+    const sorted = [...mockHospitals].sort((a,b) => b.queue - a.queue).slice(0,5);
+    document.getElementById('admin-fila-ranking').innerHTML = sorted.map(h => {
+        const color = h.queue <= 10 ? '#48bb78' : h.queue <= 25 ? '#ed8936' : '#f56565';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+            <span style="font-size:13px;color:#2d3748;font-weight:600;">${h.name}</span>
+            <span style="font-size:13px;font-weight:700;color:${color};">${h.queue} min</span>
+        </div>`;
+    }).join('');
+
+    // Alertas
+    const alertas = mockHospitals.filter(h => h.queue > 25);
+    document.getElementById('admin-alertas').innerHTML = alertas.length
+        ? alertas.map(h => `• ${h.name}: ${h.queue} pessoas na fila`).join('<br>')
+        : '<span style="color:#276749;">Nenhum alerta no momento.</span>';
+}
+
+function renderAdminFila() {
+    document.getElementById('admin-fila-list').innerHTML = mockHospitals.map((h, i) => {
+        const color = h.queue <= 10 ? '#48bb78' : h.queue <= 25 ? '#ed8936' : '#f56565';
+        return `<div class="fila-item">
+            <div class="fila-item-name">${h.name}</div>
+            <div style="font-size:12px;color:#718096;margin-bottom:8px;">${h.address}</div>
+            <div class="fila-item-row">
+                <input type="range" class="fila-slider" min="0" max="120" value="${h.queue}"
+                    oninput="updateFila(${i},this.value)"
+                    style="background:linear-gradient(to right,${color} 0%,${color} ${Math.round(h.queue/120*100)}%,#e2e8f0 ${Math.round(h.queue/120*100)}%,#e2e8f0 100%);">
+                <span class="fila-val" id="fila-val-${i}" style="background:${color}20;color:${color};">${h.queue} min</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function updateFila(idx, val) {
+    const v = parseInt(val);
+    mockHospitals[idx].queue = v;
+    const color = v <= 10 ? '#48bb78' : v <= 25 ? '#ed8936' : '#f56565';
+    const label = document.getElementById('fila-val-' + idx);
+    if (label) { label.textContent = v + ' min'; label.style.background = color + '20'; label.style.color = color; }
+    // update slider gradient
+    const sliders = document.querySelectorAll('.fila-slider');
+    if (sliders[idx]) sliders[idx].style.background = `linear-gradient(to right,${color} 0%,${color} ${Math.round(v/120*100)}%,#e2e8f0 ${Math.round(v/120*100)}%,#e2e8f0 100%)`;
+    showToast('Fila de ' + mockHospitals[idx].name + ' atualizada: ' + v + ' min', 'success');
+}
+
+function renderAdminUsuarios() {
+    const users = getAllUsers();
+    const container = document.getElementById('admin-user-list');
+    if (!users.length) {
+        container.innerHTML = '<p style="text-align:center;color:#718096;padding:32px;">Nenhum usuario cadastrado</p>';
+        return;
+    }
+    container.innerHTML = users.map(u => `
+        <div class="admin-user-card">
+            <div class="admin-user-avatar">${(u.name || 'U')[0].toUpperCase()}</div>
+            <div class="admin-user-info">
+                <div class="admin-user-name">${u.name || 'Sem nome'} ${u.hasDisability ? '<span style="font-size:11px;background:#e9d8fd;color:#553c9a;padding:2px 6px;border-radius:20px;margin-left:4px;">PcD</span>' : ''}</div>
+                <div class="admin-user-detail">CPF: ${u.cpf || '-'} | Tel: ${u.phone || '-'}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderAdminHospitais() {
+    document.getElementById('admin-hosp-count').textContent = mockHospitals.length;
+    document.getElementById('admin-hosp-list').innerHTML = mockHospitals.map((h, i) => `
+        <div class="admin-hosp-row">
+            <div>
+                <div style="font-size:14px;font-weight:700;color:#2d3748;">${h.name}</div>
+                <div style="font-size:12px;color:#718096;">${h.address} | Fila: ${h.queue} min</div>
+            </div>
+            <button class="admin-del-btn" onclick="adminDelHospital(${i})">Remover</button>
+        </div>
+    `).join('');
+}
+
+function adminAddHospital() {
+    const name = document.getElementById('new-hosp-name').value.trim();
+    const city = document.getElementById('new-hosp-city').value.trim();
+    const addr = document.getElementById('new-hosp-addr').value.trim();
+    const lat = parseFloat(document.getElementById('new-hosp-lat').value);
+    const lng = parseFloat(document.getElementById('new-hosp-lng').value);
+    const type = document.getElementById('new-hosp-type').value;
+    const wait = parseInt(document.getElementById('new-hosp-wait').value) || 30;
+
+    if (!name || !addr || isNaN(lat) || isNaN(lng)) {
+        showToast('Preencha nome, endereco, latitude e longitude', 'error');
+        return;
+    }
+
+    const newHosp = { id: Date.now(), name, city: city || 'Parana', address: addr, lat, lng, queue: wait, type };
+    mockHospitals.push(newHosp);
+    ['new-hosp-name','new-hosp-city','new-hosp-addr','new-hosp-lat','new-hosp-lng','new-hosp-wait'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    renderAdminHospitais();
+    loadAdminDashboard();
+    showToast('Hospital adicionado com sucesso!', 'success');
+}
+
+function adminDelHospital(idx) {
+    if (!confirm('Remover este hospital?')) return;
+    mockHospitals.splice(idx, 1);
+    renderAdminHospitais();
+    loadAdminDashboard();
+    showToast('Hospital removido', 'info');
+}
+
 </script>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;">
+        <div style="background:white;border-radius:20px 20px 0 0;width:100%;padding:24px;max-height:80vh;overflow-y:auto;">
+            <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 16px;"></div>
+            <div style="text-align:center;margin-bottom:20px;">
+                <div style="font-size:36px;margin-bottom:8px;">🔐</div>
+                <h2 style="font-size:18px;font-weight:800;color:#2d3748;">Acesso Administrativo</h2>
+                <p style="font-size:13px;color:#718096;">Exclusivo para funcionarios de hospitais</p>
+            </div>
+            <div style="background:#fffbeb;border:1.5px solid #f6e05e;border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;color:#744210;">
+                Codigo padrao: <strong>HOSP2024</strong> | Senha: <strong>admin123</strong>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Codigo do Hospital</label>
+                <input type="text" id="admin-code-input" placeholder="Ex: HOSP2024" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px;outline:none;">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Senha</label>
+                <input type="password" id="admin-pass-input" placeholder="Senha de administrador" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px;outline:none;">
+            </div>
+            <button onclick="doAdminLogin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#2d3748,#1a202c);color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px;">Entrar</button>
+            <button onclick="hideAdminLogin()" style="width:100%;padding:12px;background:transparent;color:#718096;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+
 </body>
 </html>
